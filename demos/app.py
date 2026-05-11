@@ -37,6 +37,8 @@ if "last_answer_meta" not in st.session_state:
     st.session_state.last_answer_meta = None
 if "last_answer_stale" not in st.session_state:
     st.session_state.last_answer_stale = False
+if "question_text" not in st.session_state:
+    st.session_state.question_text = ""
 
 # ---------- Sidebar (Apply always required) ----------
 st.sidebar.header("Model settings")
@@ -158,10 +160,11 @@ if dirty:
     st.sidebar.info("You have unapplied changes. Click **Apply Settings**.")
 
 # ---------- Main input ----------
-q = st.text_area(
+st.text_area(
     "Your question",
     height=120,
     placeholder="e.g., What EGFR-targeted therapies are FDA-approved for NSCLC?",
+    key="question_text",
 )
 ask_clicked = st.button("Ask")
 
@@ -171,11 +174,11 @@ if ask_clicked:
         st.warning("Initialize first: click **Apply Settings**.")
     elif dirty:
         st.warning("You changed settings. Click **Apply Settings** to use them.")
-    elif q.strip():
+    elif st.session_state.question_text.strip():
         with st.spinner("Thinking…"):
             try:
                 ans = answer(
-                    q,
+                    st.session_state.question_text,
                     strategy=st.session_state.applied["strategy"],
                     rag=(st.session_state.applied["run_mode"] == "RAG-LLM"),
                     temp=st.session_state.applied["temperature"],

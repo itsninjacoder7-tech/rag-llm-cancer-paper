@@ -125,11 +125,11 @@ def update_db_files(version: str, organizations: list, force_rebuild=False):
         organizations (list): list of organizations for which you update the DB
     """
     #1) read updated statements and save them
-    statements = requests.get('https://api.moalmanac.org/statements').json()['data']
+    all_statements = requests.get('https://api.moalmanac.org/statements').json()['data']
     
     for o in organizations:
         print(f"1) Loading {o} statements...")
-        statements = subset_db_statements(statements, organization=o)    
+        statements = subset_db_statements(all_statements, organization=o)
         with open(f"data/latest_db/{o}_statements__{version}.json", "w") as f:
             json.dump(statements, f)
     
