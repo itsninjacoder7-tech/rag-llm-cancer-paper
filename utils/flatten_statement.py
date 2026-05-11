@@ -99,16 +99,27 @@ def extract_therapy_info(stmt):
     return extracted_info
 
 
+def _get_extension_value(extensions, name, default=None):
+    for ext in extensions or []:
+        if ext.get("name") == name:
+            return ext.get("value", default)
+    return default
+
+
 # function to flatten statement into summary text to include in context
 def flatten_statements(stmt: dict) -> str:
     
     statement_id = stmt.get("id")
     
     # approval status
-    approval_status = stmt.get("reportedIn", [{}])[0].get("subtype", "None")
-    approval_org = stmt.get("reportedIn", [{}])[0].get("organization", {}).get("id", "Unknown organization")
-    approval_url = stmt.get("reportedIn", [{}])[0].get("url", "Unknown URL")
-    approval_date = stmt.get("reportedIn", [{}])[0].get("publication_date", "Unknown date")
+    reported_in = stmt.get("reportedIn", [{}])[0]
+    extensions = reported_in.get("extensions", [])
+    agent = _get_extension_value(extensions, "agent", {})
+    urls = reported_in.get("urls") or []
+    approval_status = reported_in.get("subtype") or reported_in.get("documentType", "None")
+    approval_org = reported_in.get("organization", {}).get("id") or agent.get("id", "Unknown organization")
+    approval_url = reported_in.get("url") or (urls[0] if urls else "Unknown URL")
+    approval_date = reported_in.get("publication_date") or _get_extension_value(extensions, "publication_date", "Unknown date")
     
     # description and indication
     description = stmt.get("description", "None")
